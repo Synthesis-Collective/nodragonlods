@@ -9,28 +9,14 @@ using System.Threading.Tasks;
 
 namespace NoDragLODs
 {
-    public static class MyExtensions
-    {
-        public static bool ContainsInsensitive(this string str, string rhs)
-        {
-            return str.Contains(rhs, StringComparison.OrdinalIgnoreCase);
-        }
-    }
-
     public class Program
     {
         public static Task<int> Main(string[] args)
         {
             return SynthesisPipeline.Instance
                 .AddPatch<ISkyrimMod, ISkyrimModGetter>(RunPatch)
-                .Run(args, new RunPreferences()
-                {
-                    ActionsForEmptyArgs = new RunDefaultPatcher()
-                    {
-                        IdentifyingModKey = "NoDragonLODs.esp",
-                        TargetRelease = GameRelease.SkyrimSE
-                    }
-                });
+                .SetTypicalOpen(GameRelease.SkyrimSE, "NoDragonLODs.esp")
+                .Run(args);
         }
 
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
@@ -45,11 +31,7 @@ namespace NoDragLODs
 
                 var modifiedNpc = state.PatchMod.Npcs.GetOrAddAsOverride(npc);
 
-                if (modifiedNpc.PlayerSkills == null)
-                {
-                    modifiedNpc.PlayerSkills = new PlayerSkills();
-                }
-
+                modifiedNpc.PlayerSkills ??= new PlayerSkills();
                 modifiedNpc.PlayerSkills.FarAwayModelDistance = 0;
             }
         }
